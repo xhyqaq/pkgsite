@@ -7,8 +7,8 @@
 package godoc
 
 import (
-	"go/ast"
-	"go/token"
+	"github.com/goplus/gop/ast"
+	"github.com/goplus/gop/token"
 	"golang.org/x/pkgsite/internal/godoc/codec"
 )
 
@@ -212,6 +212,89 @@ func encode_ast_BadExpr(e *codec.Encoder, x *ast.BadExpr) {
 	e.EndStruct()
 }
 
+func init() {
+	codec.Register(&ast.OverloadFuncDecl{},
+		func(e *codec.Encoder, x any) { encode_ast_OverloadFuncDecl(e, x.(*ast.OverloadFuncDecl)) },
+		func(d *codec.Decoder) any {
+			var x *ast.OverloadFuncDecl
+			decode_ast_OverloadFuncDecl(d, &x)
+			return x
+		})
+}
+
+func encode_ast_OverloadFuncDecl(e *codec.Encoder, x *ast.OverloadFuncDecl) {
+	if !e.StartStruct(x == nil, x) {
+		return
+	}
+	if x.Doc != nil {
+		e.EncodeUint(0)
+		encode_ast_CommentGroup(e, x.Doc)
+	}
+	if x.Recv != nil {
+		e.EncodeUint(1)
+		encode_ast_FieldList(e, x.Recv)
+	}
+	if x.Name != nil {
+		e.EncodeUint(2)
+		encode_ast_Ident(e, x.Name)
+	}
+	e.EncodeUint(3)
+	e.EncodeInt(int64(int(x.Func)))
+
+	e.EncodeUint(4)
+	e.EncodeInt(int64(int(x.Assign)))
+
+	e.EncodeUint(5)
+	e.EncodeInt(int64(int(x.Lparen)))
+
+	e.EncodeUint(6)
+	e.EncodeInt(int64(int(x.Rparen)))
+
+	e.EncodeUint(7)
+	e.EncodeBool(x.Operator)
+	e.EndStruct()
+}
+
+func decode_ast_OverloadFuncDecl(d *codec.Decoder, p **ast.OverloadFuncDecl) {
+	proceed, ref := d.StartStruct()
+	if !proceed {
+		return
+	}
+	if ref != nil {
+		*p = ref.(*ast.OverloadFuncDecl)
+		return
+	}
+	var x ast.OverloadFuncDecl
+	d.StoreRef(&x)
+	for {
+		n := d.NextStructField()
+		if n < 0 {
+			break
+		}
+		switch n {
+		case 0:
+			decode_ast_CommentGroup(d, &x.Doc)
+		case 1:
+			decode_ast_FieldList(d, &x.Recv)
+		case 2:
+			decode_ast_Ident(d, &x.Name)
+		case 3:
+			x.Func = token.Pos(d.DecodeUint())
+		case 4:
+			x.Assign = token.Pos(d.DecodeUint())
+		case 5:
+			x.Lparen = token.Pos(d.DecodeUint())
+		case 6:
+			x.Rparen = token.Pos(d.DecodeUint())
+		case 7:
+			x.Operator = d.DecodeBool()
+		default:
+			d.UnknownField("ast.FuncDecl", n)
+		}
+		*p = &x
+	}
+}
+
 func decode_ast_BadExpr(d *codec.Decoder, p **ast.BadExpr) {
 	proceed, ref := d.StartStruct()
 	if !proceed {
@@ -249,6 +332,8 @@ func init() {
 			return x
 		})
 }
+
+
 
 // Fields of ast_BadStmt: From To
 

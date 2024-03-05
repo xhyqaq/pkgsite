@@ -143,7 +143,7 @@ func Init(ctx context.Context) (_ *config.Config, err error) {
 		FallbackVersionLabel: time.Now().Format(config.AppVersionFormat),
 		DBHost:               chooseOne(GetEnv("GO_DISCOVERY_DATABASE_HOST", "localhost")),
 		DBUser:               GetEnv("GO_DISCOVERY_DATABASE_USER", "postgres"),
-		DBPassword:           os.Getenv("GO_DISCOVERY_DATABASE_PASSWORD"),
+		DBPassword:           GetEnv("GO_DISCOVERY_DATABASE_PASSWORD", "root"),
 		DBSecondaryHost:      chooseOne(os.Getenv("GO_DISCOVERY_DATABASE_SECONDARY_HOST")),
 		DBPort:               GetEnv("GO_DISCOVERY_DATABASE_PORT", "5432"),
 		DBName:               GetEnv("GO_DISCOVERY_DATABASE_NAME", "discovery-db"),

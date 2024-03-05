@@ -8,8 +8,8 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"go/ast"
-	"go/doc"
+	"github.com/goplus/gop/ast"
+	doc "github.com/goplus/gop/gopdoc"
 	"path"
 	"sort"
 	"strings"
@@ -114,6 +114,10 @@ func (p *Package) docPackage(innerPath string, modInfo *ModuleInfo) (_ *doc.Pack
 	}
 	var allGoFiles []*ast.File
 	for _, f := range p.Files {
+		// todo Temporarily found that main.gop will result in no file name, and the encoding and decoding can be traced.
+		if f.Name == "" {
+			f.Name = "main.gop"
+		}
 		allGoFiles = append(allGoFiles, f.AST)
 	}
 	d, err := doc.NewFromFiles(p.Fset, allGoFiles, importPath, m)

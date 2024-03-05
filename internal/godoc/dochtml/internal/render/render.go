@@ -8,10 +8,11 @@ package render
 
 import (
 	"context"
-	"go/ast"
-	"go/doc"
-	"go/doc/comment"
-	"go/token"
+	"github.com/goplus/gop/ast"
+	doc "github.com/goplus/gop/gopdoc"
+	"github.com/goplus/gop/gopdoc/comment"
+
+	"github.com/goplus/gop/token"
 	"regexp"
 	"strings"
 

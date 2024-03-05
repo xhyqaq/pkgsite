@@ -32,7 +32,7 @@ import (
 func DBConnURI(dbName string) string {
 	var (
 		user     = serverconfig.GetEnv("GO_DISCOVERY_DATABASE_USER", "postgres")
-		password = serverconfig.GetEnv("GO_DISCOVERY_DATABASE_PASSWORD", "")
+		password = serverconfig.GetEnv("GO_DISCOVERY_DATABASE_PASSWORD", "root")
 		host     = serverconfig.GetEnv("GO_DISCOVERY_DATABASE_HOST", "localhost")
 		port     = serverconfig.GetEnv("GO_DISCOVERY_DATABASE_PORT", "5432")
 	)

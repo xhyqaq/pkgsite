@@ -5,14 +5,14 @@
 package dochtml
 
 import (
-	"go/doc"
+	doc "github.com/goplus/gop/gopdoc"
+	"golang.org/x/pkgsite/internal/godoc/dochtml/internal/render"
 	"path"
 	"reflect"
 	"sync"
 
 	"github.com/google/safehtml"
 	"github.com/google/safehtml/template"
-	"golang.org/x/pkgsite/internal/godoc/dochtml/internal/render"
 )
 
 var (
@@ -55,6 +55,7 @@ var tmpl = map[string]any{
 		}
 		return a
 	},
+
 	// These are just placeholders, for parsing. The actual functions
 	// are in dochtml.go.
 	"render_short_synopsis":    (*render.Renderer)(nil).ShortSynopsis,

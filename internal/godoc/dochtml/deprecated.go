@@ -5,7 +5,7 @@
 package dochtml
 
 import (
-	"go/doc"
+	doc "github.com/goplus/gop/gopdoc"
 	"regexp"
 )
 

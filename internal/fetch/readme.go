@@ -82,7 +82,7 @@ func extractReadme(modulePath, dir, resolvedVersion string, contentDir fs.FS) (_
 	return readme, nil
 }
 
-var excludedReadmeExts = map[string]bool{".go": true, ".vendor": true}
+var excludedReadmeExts = map[string]bool{".go": true, "gox": true, "gop": true, ".vendor": true}
 
 // isReadme reports whether file is README or if the base name of file, with or
 // without the extension, is equal to expectedFile. README.go files will return

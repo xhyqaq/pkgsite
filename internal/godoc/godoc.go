@@ -6,8 +6,8 @@
 package godoc
 
 import (
-	"go/ast"
-	"go/token"
+	"github.com/goplus/gop/ast"
+	"github.com/goplus/gop/token"
 	"strings"
 
 	"golang.org/x/pkgsite/internal/godoc/dochtml"

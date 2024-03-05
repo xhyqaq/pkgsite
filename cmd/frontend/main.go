@@ -52,7 +52,7 @@ var (
 	directProxy = flag.Bool("direct_proxy", false, "if set to true, uses the module proxy referred to by this URL "+
 		"as a direct backend, bypassing the database")
 	bypassLicenseCheck = flag.Bool("bypass_license_check", false, "display all information, even for non-redistributable paths")
-	hostAddr           = flag.String("host", "localhost:8080", "Host address for the server")
+	hostAddr           = flag.String("host", "localhost:8088", "Host address for the server")
 )
 
 func main() {

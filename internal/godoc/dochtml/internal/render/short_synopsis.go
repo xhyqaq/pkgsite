@@ -6,8 +6,8 @@ package render
 
 import (
 	"fmt"
-	"go/ast"
-	"go/token"
+	"github.com/goplus/gop/ast"
+	"github.com/goplus/gop/token"
 	"strings"
 )
 

@@ -10,10 +10,12 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"go/ast"
+	"github.com/goplus/gop/ast"
+	"github.com/goplus/gop/parser"
+	"github.com/goplus/gop/token"
+
 	"go/build"
-	"go/parser"
-	"go/token"
+
 	"io"
 	"io/fs"
 	"net/http"
@@ -445,6 +447,9 @@ func matchingFiles(goos, goarch string, allFiles map[string][]byte) (matchedFile
 		match, err := bctx.MatchFile(".", name) // This will access the file we just added to files map above.
 		if err != nil {
 			return nil, &BadPackageError{Err: fmt.Errorf(`bctx.MatchFile(".", %q): %w`, name, err)}
+		}
+		if strings.HasSuffix(name, ".gox") || strings.HasSuffix(name, ".gop") {
+			continue
 		}
 		if !match {
 			delete(matchedFiles, name)

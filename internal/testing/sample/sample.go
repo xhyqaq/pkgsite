@@ -9,8 +9,8 @@ package sample
 import (
 	"context"
 	"fmt"
-	"go/parser"
-	"go/token"
+	"github.com/goplus/gop/parser"
+	"github.com/goplus/gop/token"
 	"math"
 	"net/http"
 	"path"

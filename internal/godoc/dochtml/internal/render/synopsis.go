@@ -7,9 +7,9 @@ package render
 import (
 	"bytes"
 	"fmt"
-	"go/ast"
-	"go/format"
-	"go/token"
+	"github.com/goplus/gop/ast"
+	"github.com/goplus/gop/format"
+	"github.com/goplus/gop/token"
 	"strings"
 )
 

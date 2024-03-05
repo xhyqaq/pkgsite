@@ -5,11 +5,10 @@
 package render
 
 import (
-	"go/ast"
-	"go/doc"
-	"go/token"
-
 	"github.com/google/safehtml/template"
+	"github.com/goplus/gop/ast"
+	doc "github.com/goplus/gop/gopdoc"
+	"github.com/goplus/gop/token"
 )
 
 /*

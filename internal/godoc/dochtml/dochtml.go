@@ -15,10 +15,12 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"go/ast"
-	"go/doc"
-	"go/printer"
-	"go/token"
+	"github.com/goplus/gop/ast"
+	doc "github.com/goplus/gop/gopdoc"
+	"github.com/goplus/gop/printer"
+	"github.com/goplus/gop/token"
+	"golang.org/x/pkgsite/internal/godoc/dochtml/internal/render"
+
 	"sort"
 	"strings"
 
@@ -28,7 +30,7 @@ import (
 	"github.com/google/safehtml/uncheckedconversions"
 	"golang.org/x/pkgsite/internal"
 	"golang.org/x/pkgsite/internal/derrors"
-	"golang.org/x/pkgsite/internal/godoc/dochtml/internal/render"
+
 	"golang.org/x/text/cases"
 	"golang.org/x/text/language"
 )

@@ -9,13 +9,13 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"golang.org/x/mod/module"
 	"io/fs"
 	"path"
 	"runtime/debug"
 	"strings"
 	"sync"
 
-	"golang.org/x/mod/module"
 	"golang.org/x/pkgsite/internal"
 	"golang.org/x/pkgsite/internal/derrors"
 	"golang.org/x/pkgsite/internal/godoc"
@@ -76,11 +76,9 @@ func extractPackage(ctx context.Context, modulePath, pkgPath string, contentDir 
 		if e.IsDir() {
 			continue
 		}
-		if !strings.HasSuffix(e.Name(), ".go") {
-			// We care about .go files only.
-			continue
+		if strings.HasSuffix(e.Name(), ".go") || strings.HasSuffix(e.Name(), ".gox") || strings.HasSuffix(e.Name(), ".gop") {
+			goFiles = append(goFiles, path.Join(innerPath, e.Name()))
 		}
-		goFiles = append(goFiles, path.Join(innerPath, e.Name()))
 	}
 	if len(goFiles) == 0 {
 		// We shouldn't be here, because we only call extratPackage for package units.
@@ -220,48 +218,46 @@ func extractPackageMetas(ctx context.Context, modulePath, resolvedVersion string
 			// File is in a directory we're not looking to process at this time, so skip it.
 			return nil
 		}
-		if !strings.HasSuffix(pathname, ".go") {
-			// We care about .go files only.
-			return nil
-		}
-		// It's possible to have a Go package in a directory that does not result in a valid import path.
-		// That package cannot be imported, but that may be fine if it's a main package, intended to built
-		// and run from that directory.
-		// Example:  https://github.com/postmannen/go-learning/blob/master/concurrency/01-sending%20numbers%20and%20receving%20numbers%20from%20a%20channel/main.go
-		// We're not set up to handle invalid import paths, so skip these packages.
-		if err := module.CheckImportPath(importPath); err != nil {
-			incompleteDirs[innerPath] = true
-			packageVersionStates = append(packageVersionStates, &internal.PackageVersionState{
-				ModulePath:  modulePath,
-				PackagePath: importPath,
-				Version:     resolvedVersion,
-				Status:      derrors.ToStatus(derrors.PackageBadImportPath),
-				Error:       err.Error(),
-			})
-			return nil
-		}
-		info, err := d.Info()
-		if err != nil {
-			return err
-		}
-		if info.Size() > MaxFileSize {
-			incompleteDirs[innerPath] = true
-			status := derrors.ToStatus(derrors.PackageMaxFileSizeLimitExceeded)
-			err := fmt.Sprintf("Unable to process %s: file size %d exceeds max limit %d",
-				pathname, info.Size(), MaxFileSize)
-			packageVersionStates = append(packageVersionStates, &internal.PackageVersionState{
-				ModulePath:  modulePath,
-				PackagePath: importPath,
-				Version:     resolvedVersion,
-				Status:      status,
-				Error:       err,
-			})
-			return nil
-		}
-		dirs[innerPath] = append(dirs[innerPath], pathname)
-		if len(dirs) > maxPackagesPerModule {
-			return fmt.Errorf("%d packages found in %q; exceeds limit %d for maxPackagePerModule: %w",
-				len(dirs), modulePath, maxPackagesPerModule, derrors.ModuleTooLarge)
+		if strings.HasSuffix(pathname, ".go") || strings.HasSuffix(pathname, ".gox") || strings.HasSuffix(pathname, ".gop") {
+			// It's possible to have a Go package in a directory that does not result in a valid import path.
+			// That package cannot be imported, but that may be fine if it's a main package, intended to built
+			// and run from that directory.
+			// Example:  https://github.com/postmannen/go-learning/blob/master/concurrency/01-sending%20numbers%20and%20receving%20numbers%20from%20a%20channel/main.go
+			// We're not set up to handle invalid import paths, so skip these packages.
+			if err := module.CheckImportPath(importPath); err != nil {
+				incompleteDirs[innerPath] = true
+				packageVersionStates = append(packageVersionStates, &internal.PackageVersionState{
+					ModulePath:  modulePath,
+					PackagePath: importPath,
+					Version:     resolvedVersion,
+					Status:      derrors.ToStatus(derrors.PackageBadImportPath),
+					Error:       err.Error(),
+				})
+				return nil
+			}
+			info, err := d.Info()
+			if err != nil {
+				return err
+			}
+			if info.Size() > MaxFileSize {
+				incompleteDirs[innerPath] = true
+				status := derrors.ToStatus(derrors.PackageMaxFileSizeLimitExceeded)
+				err := fmt.Sprintf("Unable to process %s: file size %d exceeds max limit %d",
+					pathname, info.Size(), MaxFileSize)
+				packageVersionStates = append(packageVersionStates, &internal.PackageVersionState{
+					ModulePath:  modulePath,
+					PackagePath: importPath,
+					Version:     resolvedVersion,
+					Status:      status,
+					Error:       err,
+				})
+				return nil
+			}
+			dirs[innerPath] = append(dirs[innerPath], pathname)
+			if len(dirs) > maxPackagesPerModule {
+				return fmt.Errorf("%d packages found in %q; exceeds limit %d for maxPackagePerModule: %w",
+					len(dirs), modulePath, maxPackagesPerModule, derrors.ModuleTooLarge)
+			}
 		}
 		return nil
 	})

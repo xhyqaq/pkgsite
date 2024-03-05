@@ -6,9 +6,9 @@ package dochtml
 
 import (
 	"fmt"
-	"go/ast"
-	"go/doc"
-	"go/token"
+	"github.com/goplus/gop/ast"
+	doc "github.com/goplus/gop/gopdoc"
+	"github.com/goplus/gop/token"
 
 	"golang.org/x/pkgsite/internal"
 	"golang.org/x/pkgsite/internal/derrors"

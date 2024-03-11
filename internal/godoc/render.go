@@ -153,9 +153,7 @@ func (p *Package) renderOptions(innerPath string, sourceInfo *source.Info, modIn
 			return ""
 		}
 		// resolve gop_autogen.go path
-		if strings.Contains(p.Filename, ".gop") || strings.Contains(p.Filename, ".gox") {
-			p.Filename = filepath.Base(p.Filename)
-		}
+		p.Filename = filepath.Base(p.Filename)
 		return sourceInfo.LineURL(path.Join(innerPath, p.Filename), p.Line)
 	}
 	fileLinkFunc := func(filename string) string {

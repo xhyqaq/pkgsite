@@ -119,14 +119,11 @@ func (p *Package) DocPackage(innerPath string, modInfo *ModuleInfo) (_ *doc.Pack
 		}
 	}
 
-	FindOverloadFuncThenAdd(p)
-
 	d, err := doc.NewFromFiles(p.Fset, allGoFiles, importPath, m)
 	if err != nil {
 		return nil, fmt.Errorf("doc.NewFromFiles: %v", err)
 	}
-
-	RestoreFuncName(d.Funcs)
+	FindOverloadFuncThenAdd(d)
 
 	if d.ImportPath != importPath {
 		panic(fmt.Errorf("internal error: *doc.Package has an unexpected import path (%q != %q)", d.ImportPath, importPath))
@@ -230,7 +227,6 @@ func (p *Package) Render(ctx context.Context, innerPath string,
 	if err != nil {
 		return nil, err
 	}
-	RestoreFuncDeclName(p.encPackage.Files)
 
 	opts := p.renderOptions(innerPath, sourceInfo, modInfo, nameToVersion, bc)
 	parts, err := dochtml.Render(ctx, p.Fset, d, opts)

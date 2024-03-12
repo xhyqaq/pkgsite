@@ -1,23 +1,19 @@
 package godoc
 
 import (
-	"fmt"
-	"github.com/google/uuid"
 	"go/ast"
 	"go/doc"
 	"strings"
 )
 
 // FindOverloadFuncThenAdd  Find overloaded functions and update function names
-func FindOverloadFuncThenAdd(p *Package) {
+func FindOverloadFuncThenAdd(d *doc.Package) {
 	var overloadFuncName = make(map[string]string)
-	var overLoadFunc = make([]*ast.FuncDecl, 0)
-	for _, f := range p.encPackage.Files {
-		for _, decl := range f.AST.Decls {
-			// First it will traverse the constants
-			if g, ok := decl.(*ast.GenDecl); ok {
-				for _, specs := range g.Specs {
-					if vs, ok := specs.(*ast.ValueSpec); ok {
+	for _, constO := range d.Consts {
+		for _, name := range constO.Names {
+			if strings.Contains(name, "Gopo_") {
+				for _, spec := range constO.Decl.Specs {
+					if vs, ok := spec.(*ast.ValueSpec); ok {
 						for _, name := range vs.Names {
 							if strings.Contains(name.Name, "Gopo_") {
 								for _, v := range vs.Values {
@@ -33,56 +29,28 @@ func FindOverloadFuncThenAdd(p *Package) {
 					}
 				}
 			}
-			// Secondly find the overloaded function and rename it
-			// Because the same function name will be filtered, a specific character set is required
-			if d, ok := decl.(*ast.FuncDecl); ok {
-				if k, ok := overloadFuncName[d.Name.Name]; ok {
-					name := fmt.Sprintf("%s!%s", k, uuid.NewString())
-					newFunc := &ast.FuncDecl{}
-					overLoadFunc = append(overLoadFunc, newFunc)
-					newFunc.Body = d.Body
-					newFunc.Doc = d.Doc
-					newFunc.Recv = d.Recv
-					newFunc.Type = d.Type
-					newFunc.Recv = d.Recv
-					newFunc.Type = d.Type
-					newFunc.Name = &ast.Ident{}
-					newFunc.Name.NamePos = d.Name.NamePos
-					newFunc.Name.Obj = d.Name.Obj
-					newFunc.Name.Name = name
-				}
-			}
 		}
 	}
-	for _, newFunc := range overLoadFunc {
-		for _, f := range p.encPackage.Files {
-			f.AST.Decls = append(f.AST.Decls, newFunc)
+	if len(overloadFuncName) == 0 {
+		return
+	}
+	newFuncs := make([]*doc.Func, len(d.Funcs)+len(overloadFuncName))
+	index := 0
+	for _, funcO := range d.Funcs {
+		if name, ok := overloadFuncName[funcO.Name]; ok {
+			newFunc := &doc.Func{}
+			newFunc.Doc = funcO.Doc
+			newFunc.Recv = funcO.Recv
+			newFunc.Orig = funcO.Orig
+			newFunc.Decl = funcO.Decl
+			newFunc.Level = funcO.Level
+			newFunc.Examples = funcO.Examples
+			newFunc.Name = name
+			newFuncs[index] = newFunc
+			index++
 		}
+		newFuncs[index] = funcO
+		index++
 	}
-}
-
-// RestoreFuncName Overloaded function restores function name
-func RestoreFuncName(funcs []*doc.Func) {
-	for _, f := range funcs {
-		f.Name = isOverloadFuncThenRestoresName(f.Name)
-	}
-}
-
-// RestoreFuncDeclName Overloaded function decl restores function name
-func RestoreFuncDeclName(funcs []*File) {
-	for _, f := range funcs {
-		for _, dec := range f.AST.Decls {
-			if fun, ok := dec.(*ast.FuncDecl); ok {
-				name := fun.Name.Name
-				fun.Name.Name = isOverloadFuncThenRestoresName(name)
-			}
-		}
-	}
-}
-
-func isOverloadFuncThenRestoresName(name string) string {
-	if strings.Contains(name, "!") {
-		return strings.SplitN(name, "!", 2)[0]
-	}
-	return name
+	d.Funcs = newFuncs
 }

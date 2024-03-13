@@ -3,11 +3,15 @@ package godoc
 import (
 	"go/ast"
 	"go/doc"
+	"sort"
 	"strings"
 )
 
 // FindOverloadFuncThenAdd  Find overloaded functions and update function names
 func FindOverloadFuncThenAdd(d *doc.Package) {
+	if len(d.Funcs) == 0 {
+		return
+	}
 	var overloadFuncName = make(map[string]string)
 	for _, constO := range d.Consts {
 		for _, name := range constO.Names {
@@ -32,11 +36,7 @@ func FindOverloadFuncThenAdd(d *doc.Package) {
 			}
 		}
 	}
-	if len(overloadFuncName) == 0 {
-		return
-	}
-	newFuncs := make([]*doc.Func, len(d.Funcs)+len(overloadFuncName))
-	index := 0
+	var overloadFunc = make([]*doc.Func, 0)
 	for _, funcO := range d.Funcs {
 		if name, ok := overloadFuncName[funcO.Name]; ok {
 			newFunc := &doc.Func{}
@@ -47,11 +47,14 @@ func FindOverloadFuncThenAdd(d *doc.Package) {
 			newFunc.Level = funcO.Level
 			newFunc.Examples = funcO.Examples
 			newFunc.Name = name
-			newFuncs[index] = newFunc
-			index++
+			overloadFunc = append(overloadFunc, newFunc)
 		}
-		newFuncs[index] = funcO
-		index++
 	}
-	d.Funcs = newFuncs
+	for _, funs := range overloadFunc {
+		d.Funcs = append(d.Funcs, funs)
+	}
+
+	sort.Slice(d.Funcs, func(i, j int) bool {
+		return d.Funcs[i].Name < d.Funcs[j].Name
+	})
 }

@@ -16,11 +16,12 @@ func FindOverloadFuncThenAdd(d *doc.Package) {
 					if vs, ok := spec.(*ast.ValueSpec); ok {
 						for _, name := range vs.Names {
 							if strings.Contains(name.Name, "Gopo_") {
+								n := strings.TrimPrefix(name.Name, "Gopo_")
 								for _, v := range vs.Values {
 									if bas, ok := v.(*ast.BasicLit); ok {
 										overloadFuncs := strings.Split(bas.Value, ",")
 										for i2 := range overloadFuncs {
-											overloadFuncName[strings.ReplaceAll(overloadFuncs[i2], "\"", "")] = strings.TrimPrefix(name.Name, "Gopo_")
+											overloadFuncName[strings.ReplaceAll(overloadFuncs[i2], "\"", "")] = n
 										}
 									}
 								}

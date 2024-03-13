@@ -3,6 +3,7 @@ package godoc
 import (
 	"go/ast"
 	"go/doc"
+	"regexp"
 	"sort"
 	"strings"
 )
@@ -38,6 +39,7 @@ func FindOverloadFuncThenAdd(d *doc.Package) {
 	}
 	var overloadFunc = make([]*doc.Func, 0)
 	for _, funcO := range d.Funcs {
+		RestoreName(funcO)
 		if name, ok := overloadFuncName[funcO.Name]; ok {
 			newFunc := &doc.Func{}
 			newFunc.Doc = funcO.Doc
@@ -57,4 +59,21 @@ func FindOverloadFuncThenAdd(d *doc.Package) {
 	sort.Slice(d.Funcs, func(i, j int) bool {
 		return d.Funcs[i].Name < d.Funcs[j].Name
 	})
+}
+
+// FindOverloadFuncThenRestoreName func name: xxx_001 xxx_002
+func FindOverloadFuncThenRestoreName(types []*doc.Type) {
+	for _, t := range types {
+		for _, f := range t.Funcs {
+			RestoreName(f)
+		}
+	}
+}
+
+// RestoreName restore overload func name
+func RestoreName(funcO *doc.Func) {
+	re := regexp.MustCompile(`__\d+`)
+	name := re.ReplaceAllString(funcO.Name, "")
+	funcO.Decl.Name.Name = name
+	funcO.Name = name
 }

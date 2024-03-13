@@ -5,6 +5,7 @@ import (
 	"go/doc"
 	"regexp"
 	"sort"
+	"strconv"
 	"strings"
 )
 
@@ -24,9 +25,14 @@ func FindOverloadFuncThenAdd(d *doc.Package) {
 								n := strings.TrimPrefix(name.Name, "Gopo_")
 								for _, v := range vs.Values {
 									if bas, ok := v.(*ast.BasicLit); ok {
-										overloadFuncs := strings.Split(bas.Value, ",")
+										// ignore error
+										values, err := strconv.Unquote(bas.Value)
+										if err != nil {
+											continue
+										}
+										overloadFuncs := strings.Split(values, ",")
 										for i2 := range overloadFuncs {
-											overloadFuncName[strings.ReplaceAll(overloadFuncs[i2], "\"", "")] = n
+											overloadFuncName[overloadFuncs[i2]] = n
 										}
 									}
 								}
@@ -41,14 +47,7 @@ func FindOverloadFuncThenAdd(d *doc.Package) {
 	for _, funcO := range d.Funcs {
 		RestoreName(funcO)
 		if name, ok := overloadFuncName[funcO.Name]; ok {
-			newFunc := &doc.Func{}
-			newFunc.Doc = funcO.Doc
-			newFunc.Recv = funcO.Recv
-			newFunc.Orig = funcO.Orig
-			newFunc.Decl = funcO.Decl
-			newFunc.Level = funcO.Level
-			newFunc.Examples = funcO.Examples
-			newFunc.Name = name
+			newFunc := buildNewFunc(funcO, name)
 			overloadFunc = append(overloadFunc, newFunc)
 		}
 	}
@@ -76,4 +75,24 @@ func RestoreName(funcO *doc.Func) {
 	name := re.ReplaceAllString(funcO.Name, "")
 	funcO.Decl.Name.Name = name
 	funcO.Name = name
+}
+
+func buildNewFunc(oldFunc *doc.Func, name string) *doc.Func {
+	newFunc := &doc.Func{}
+	newFunc.Doc = oldFunc.Doc
+	newFunc.Recv = oldFunc.Recv
+	newFunc.Orig = oldFunc.Orig
+	newFunc.Decl = &ast.FuncDecl{}
+	newFunc.Decl.Type = oldFunc.Decl.Type
+	newFunc.Decl.Doc = oldFunc.Decl.Doc
+	newFunc.Decl.Recv = oldFunc.Decl.Recv
+	newFunc.Decl.Body = oldFunc.Decl.Body
+	newFunc.Decl.Name = &ast.Ident{}
+	newFunc.Decl.Name.NamePos = oldFunc.Decl.Name.NamePos
+	newFunc.Decl.Name.Name = name
+	newFunc.Decl.Name.Obj = oldFunc.Decl.Name.Obj
+	newFunc.Level = oldFunc.Level
+	newFunc.Examples = oldFunc.Examples
+	newFunc.Name = name
+	return newFunc
 }

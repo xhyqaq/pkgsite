@@ -1,13 +1,17 @@
 package godoc
 
 import (
+	"context"
 	"go/ast"
 	"go/doc"
+	"golang.org/x/pkgsite/internal/log"
 	"regexp"
 	"sort"
 	"strconv"
 	"strings"
 )
+
+var pattern string = `__\d+`
 
 // FindOverloadFuncThenAdd  Find overloaded functions and update function names
 func FindOverloadFuncThenAdd(d *doc.Package) {
@@ -45,7 +49,13 @@ func FindOverloadFuncThenAdd(d *doc.Package) {
 	}
 	var overloadFunc = make([]*doc.Func, 0)
 	for _, funcO := range d.Funcs {
-		restoreName(funcO)
+		match, err := isMatchName(funcO.Name)
+		if err != nil {
+			continue
+		}
+		if match {
+			restoreName(funcO)
+		}
 		if name, ok := overloadFuncName[funcO.Name]; ok {
 			newFunc := buildNewFunc(funcO, name)
 			overloadFunc = append(overloadFunc, newFunc)
@@ -60,18 +70,33 @@ func FindOverloadFuncThenAdd(d *doc.Package) {
 	})
 }
 
-// FindOverloadFuncThenRestoreName func name: xxx_001 xxx_002
-func FindOverloadFuncThenRestoreName(types []*doc.Type) {
+// FindOverloadFuncTypeThenRestoreName func name: xxx_001 xxx_002
+func FindOverloadFuncTypeThenRestoreName(types []*doc.Type) {
 	for _, t := range types {
-		for _, f := range t.Funcs {
-			restoreName(f)
+		for _, f := range t.Methods {
+			match, err := isMatchName(f.Name)
+			if err != nil {
+				continue
+			}
+			if match {
+				restoreName(f)
+			}
 		}
 	}
 }
 
+func isMatchName(name string) (bool, error) {
+	match, err := regexp.MatchString(pattern, name)
+	if err != nil {
+		log.Errorf(context.Background(), "match function name err", err.Error())
+		return false, err
+	}
+	return match, nil
+}
+
 // restoreName restore overload func name
 func restoreName(funcO *doc.Func) {
-	re := regexp.MustCompile(`__\d+`)
+	re := regexp.MustCompile(pattern)
 	name := re.ReplaceAllString(funcO.Name, "")
 	funcO.Decl.Name.Name = name
 	funcO.Name = name

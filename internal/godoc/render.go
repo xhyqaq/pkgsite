@@ -124,7 +124,7 @@ func (p *Package) DocPackage(innerPath string, modInfo *ModuleInfo) (_ *doc.Pack
 		return nil, fmt.Errorf("doc.NewFromFiles: %v", err)
 	}
 	FindOverloadFuncThenAdd(d)
-	FindOverloadFuncThenRestoreName(d.Types)
+	FindOverloadFuncTypeThenRestoreName(d.Types)
 	if d.ImportPath != importPath {
 		panic(fmt.Errorf("internal error: *doc.Package has an unexpected import path (%q != %q)", d.ImportPath, importPath))
 	}

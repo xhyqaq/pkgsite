@@ -47,7 +47,8 @@ func FindOverloadFuncThenAdd(d *doc.Package) {
 			}
 		}
 	}
-	var overloadFunc = make([]*doc.Func, 0)
+	// even though overloadFuncName is empty, but the situation of funcName__N may occur, so it cannot be returned in advance
+	var overloadFunc = make([]*doc.Func, 0, len(overloadFuncName))
 	for _, funcO := range d.Funcs {
 		match, err := isMatchName(funcO.Name)
 		if err != nil {

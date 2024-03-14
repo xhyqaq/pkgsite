@@ -45,7 +45,7 @@ func FindOverloadFuncThenAdd(d *doc.Package) {
 	}
 	var overloadFunc = make([]*doc.Func, 0)
 	for _, funcO := range d.Funcs {
-		RestoreName(funcO)
+		restoreName(funcO)
 		if name, ok := overloadFuncName[funcO.Name]; ok {
 			newFunc := buildNewFunc(funcO, name)
 			overloadFunc = append(overloadFunc, newFunc)
@@ -64,13 +64,13 @@ func FindOverloadFuncThenAdd(d *doc.Package) {
 func FindOverloadFuncThenRestoreName(types []*doc.Type) {
 	for _, t := range types {
 		for _, f := range t.Funcs {
-			RestoreName(f)
+			restoreName(f)
 		}
 	}
 }
 
-// RestoreName restore overload func name
-func RestoreName(funcO *doc.Func) {
+// restoreName restore overload func name
+func restoreName(funcO *doc.Func) {
 	re := regexp.MustCompile(`__\d+`)
 	name := re.ReplaceAllString(funcO.Name, "")
 	funcO.Decl.Name.Name = name
